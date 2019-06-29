@@ -13,7 +13,7 @@
 (eval-when (load eval)
 
 (export '(*slime-stream* slime-connect-socket socket-eval socket-request
-          slime-error slime-finish-output slimetop print-callstack))
+          slime-error slime-finish-output slimetop))
 
 (defvar *slime-stream*)
 
@@ -52,17 +52,16 @@
         (delete-if #'(lambda (val) (string= val "--port=" :end1 7))
                    lisp::*eustop-argument* :count 1)))
 
-(defun slime-error (code msg1 form &optional (msg2))
-  (if (and msg2 (zerop (length msg1))) (setq msg1 msg2 msg2 nil))
+(defun slime-error (err)
   (socket-request "error"
-   (with-output-to-string (s)
-     (format s "~a" msg1)
-     (if msg2 (format s " ~a" msg2))
-     (if form (format s " in ~s" form))))
-  (let ((*replevel* (1+ *replevel*))
-        (*reptype* "E"))
-    (while (catch *replevel* (reploop #'toplevel-prompt))))
-  (throw *replevel* t))
+    (list
+     (with-output-to-string (s)
+       (format s "~a" (get err :msg))
+       (if (get err :form) (format s " in ~s" (get err :form))))
+     (mapcar #'princ-to-string (get err :callstack))))
+  (setf (get err :msg) nil)
+  (setf (get err :callstack) nil)
+  (next-handler))
 
 (defun slime-finish-output (strm)
   (when (derivedp *slime-stream* socket-stream)
@@ -73,8 +72,7 @@
 
 (defun slimetop ()
   (clean-eustop)
-  (lisp::install-error-handler 'slime::slime-error)
-  (setq lisp::*max-callstack-depth* 0)
+  (lisp::install-handler error 'slime::slime-error)
   (catch :eusexit
     (while t
       (catch 0
@@ -84,10 +82,6 @@
       ))
   (throw :eusexit nil))
 
-(defun print-callstack (n)
-  (let ((lisp::*max-callstack-depth* n))
-    (error "print-callstack")))
-)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Toplevel Overwrites

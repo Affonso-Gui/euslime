@@ -224,8 +224,9 @@ class EuslispProcess(Process):
         if command == 'error':
             if recursive:
                 return
-            msg = loads(data)
-            stack = self.get_callstack()
+            msg, stack = loads(data)
+            stack.reverse()  # temporary
+            stack = [[i, x, [Symbol(":restartable"), False]] for i,x in enumerate(stack)]
             raise EuslispError(msg, stack)
         if command == 'abort':
             return
@@ -281,32 +282,6 @@ class EuslispProcess(Process):
             except Empty:
                 self.check_poll()
                 continue
-
-    def get_callstack(self, end=10):
-        self.output = Queue()
-        self.clear_socket_stack()
-        cmd_str = '(slime:print-callstack {})'.format(end + 4)
-        self.euslime_connection.send(cmd_str + self.delim)
-        stack = list(self.get_output(recursive=True))
-        stack = gen_to_string(stack)
-        stack = [x.strip() for x in stack.split(self.delim)]
-        # Remove 'Call Stack' and dummy error messages
-        #  'Call Stack (max depth: 10):',
-        #  '0: at (slime:print-callstack 10)',
-        #  '1: at slime:slime-error',
-        #  '2: at slime:slime-error'
-        stack = stack[4:]
-        strace = []
-        for i, line in enumerate(stack):
-            split_line = line.split(": at ", 1)
-            if len(split_line) == 2:
-                strace.append(
-                    [i, split_line[1], [Symbol(":restartable"), False]])
-            else:
-                break
-        self.euslime_connection.send(
-            '(lisp:reset lisp:*replevel*)' + self.delim)
-        return strace
 
     def exec_internal(self, cmd_str):
         self.clear_socket_stack()

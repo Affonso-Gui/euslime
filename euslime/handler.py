@@ -269,8 +269,8 @@ class EuslimeHandler(object):
         self.close_request.set()
 
     def swank_backtrace(self, start, end):
-        res = self.euslisp.get_callstack(end)
-        yield EuslispResult(res[start:])
+        stack = self.debugger[-1].stack[start:end]
+        yield EuslispResult(stack)
 
     def swank_throw_to_toplevel(self):
         lvl = len(self.debugger)
@@ -289,6 +289,7 @@ class EuslimeHandler(object):
         #  > write-string (without :repl-result) after quitting debugger
 
         # Return value
+        num += 4  # temporary
         for r in self.euslisp.eval('(lisp:resume {} {})'.format(num, value)):
             yield r
 
