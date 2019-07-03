@@ -225,7 +225,7 @@ class EuslispProcess(Process):
             if recursive:
                 return
             msg, stack = loads(data)
-            stack.reverse()  # temporary
+            msg = no_color(msg).strip()  # No colors allowed in the sldb buffer
             stack = [[i, x, [Symbol(":restartable"), False]] for i,x in enumerate(stack)]
             raise EuslispError(msg, stack)
         if command == 'abort':

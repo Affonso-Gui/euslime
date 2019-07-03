@@ -56,8 +56,7 @@
   (socket-request "error"
     (list
      (with-output-to-string (s)
-       (format s "~a" (get err :msg))
-       (if (get err :form) (format s " in ~s" (get err :form))))
+       (lisp::print-error-msg err s))
      (mapcar #'princ-to-string (get err :callstack))))
   (setf (get err :msg) nil)
   (setf (get err :callstack) nil)
