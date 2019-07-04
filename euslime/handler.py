@@ -278,7 +278,6 @@ class EuslimeHandler(object):
 
     def swank_sldb_return_from_frame(self, num, value):
         level = len(self.debugger)
-        log.debug('RETURN FROM FRAME')
         deb = self.debugger.pop(level - 1)
         res_dict = deb.restarts_dict
         # res = self.euslisp.exec_internal('(lisp:continue {})'.format(value))
@@ -301,6 +300,26 @@ class EuslimeHandler(object):
         # for r in self.swank_invoke_nth_restart_for_emacs(
         #         len(self.debugger), res_dict['CONTINUE']):
         #     yield r
+
+    def swank_restart_frame(self, num):
+        level = len(self.debugger)
+        deb = self.debugger.pop(level - 1)
+        res_dict = deb.restarts_dict
+        # res = self.euslisp.exec_internal('(lisp:continue {})'.format(value))
+
+        # TODO
+        # Cannot handle errors on minibuffer prompt
+        #  > raise and keep track of sldb levels
+        #  > write-string (without :repl-result) after quitting debugger
+
+        # Return value
+        num += 4  # temporary
+        for r in self.euslisp.eval('(lisp:resume {})'.format(num)):
+            yield r
+
+        yield [Symbol(':debug-return'), 0, level, Symbol('nil')]
+        # yield [Symbol(':return'), {'ok': Symbol('nil')}, self.command_id]
+        yield [Symbol(':return'), {'ok': Symbol('nil')}, deb.id]
 
     def swank_invoke_nth_restart_for_emacs(self, level, num):
         deb = self.debugger.pop(level - 1)
