@@ -56,7 +56,7 @@ class Protocol(object):
     def interrupt(self):
         yield self.dumps([Symbol(":read-aborted"), 0, 1])
         self.handler.euslisp.process.send_signal(signal.SIGINT)
-        self.handler.euslisp.reset()
+        # self.handler.euslisp.reset()
         yield self.dumps([Symbol(':return'),
                           {'abort': "'Keyboard Interrupt'"},
                           self.handler.command_id.pop()])

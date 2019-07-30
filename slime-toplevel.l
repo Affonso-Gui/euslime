@@ -125,7 +125,10 @@
 
   ;; Set signal-handler and *history* for non-tty streams
   (unless (unix:isatty *standard-input*)
-    (unix:signal unix::sigint 'sigint-handler 2)
+    (unix:signal unix::sigint
+                 #'(lambda (sig code) (signals unix::sigint-received :msg "keyboard interrupt")))
+    (unix:signal unix::sigcont
+                 #'(lambda (sig code) (signals unix::sigcont-received)))
     (when (fboundp 'unix:tcgets)
       (setq *tc* (unix:tcgets *standard-input*))
       (new-history *history-max*)))
