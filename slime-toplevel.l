@@ -57,9 +57,9 @@
     (list
      (with-output-to-string (s)
        (lisp::print-error-msg err s))
-     (mapcar #'princ-to-string (get err :callstack))))
-  (setf (get err :msg) nil)
-  (setf (get err :callstack) nil)
+     (mapcar #'princ-to-string (send err :callstack))))
+  (send err :set-val 'msg nil)
+  (send err :set-val 'callstack nil)
   (next-handler))
 
 (defun slime-finish-output (strm)
