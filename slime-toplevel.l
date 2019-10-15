@@ -56,9 +56,9 @@
   (socket-request "error"
     (list
      (with-output-to-string (s)
-       (lisp::print-error-msg err s))
+       (lisp::print-error-message err s))
      (mapcar #'princ-to-string (send err :callstack))))
-  (send err :set-val 'msg nil)
+  (send err :set-val 'message nil)
   (send err :set-val 'callstack nil)
   (next-handler))
 
