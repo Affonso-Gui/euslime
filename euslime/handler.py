@@ -289,7 +289,7 @@ class EuslimeHandler(object):
 
         # Return value
         num += 5  # temporary
-        for r in self.euslisp.eval('(lisp:resume {} {})'.format(num, value)):
+        for r in self.euslisp.eval('(lisp:unwind {} {})'.format(num, value)):
             yield r
 
         yield [Symbol(':debug-return'), 0, level, Symbol('nil')]
@@ -314,7 +314,7 @@ class EuslimeHandler(object):
 
         # Return value
         num += 5  # temporary
-        for r in self.euslisp.eval('(lisp:resume {})'.format(num)):
+        for r in self.euslisp.eval('(lisp:unwind {})'.format(num)):
             yield r
 
         yield [Symbol(':debug-return'), 0, level, Symbol('nil')]
