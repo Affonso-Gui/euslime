@@ -60,7 +60,7 @@
      (mapcar #'princ-to-string (send err :callstack))))
   (send err :set-val 'message nil)
   (send err :set-val 'callstack nil)
-  (next-handler))
+  (signals err))
 
 (defun slime-finish-output (strm)
   (when (derivedp *slime-stream* socket-stream)
