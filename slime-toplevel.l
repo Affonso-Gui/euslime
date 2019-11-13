@@ -71,7 +71,7 @@
 
 (defun slimetop ()
   (clean-eustop)
-  (lisp::install-handler error 'slime::slime-error)
+  (lisp::install-handler error 'slime::slime-error :recursive nil)
   (catch :eusexit
     (while t
       (catch 0
