@@ -57,7 +57,7 @@
     (list
      (with-output-to-string (s)
        (lisp::print-error-message err s))
-     (mapcar #'princ-to-string (send err :callstack))))
+     (mapcar #'prin1-to-string (send err :callstack))))
   (send err :set-val 'message nil)
   (send err :set-val 'callstack nil)
   (signals err))
