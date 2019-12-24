@@ -60,7 +60,8 @@
      (mapcar #'prin1-to-string (send err :callstack))))
   (send err :set-val 'message nil)
   (send err :set-val 'callstack nil)
-  (signals err))
+  ;; skip itself and call default euserror handling
+  (invoke-next-handler err 1))
 
 (defun slime-finish-output (strm)
   (when (derivedp *slime-stream* socket-stream)
@@ -71,7 +72,7 @@
 
 (defun slimetop ()
   (clean-eustop)
-  (lisp::install-handler error 'slime::slime-error :recursive nil)
+  (lisp::install-handler error 'slime::slime-error)
   (catch :eusexit
     (while t
       (catch 0
