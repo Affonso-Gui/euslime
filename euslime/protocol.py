@@ -2,7 +2,9 @@ from sexpdata import dumps, loads, Symbol
 import signal
 import traceback
 
+from euslime.bridge import EuslispError
 from euslime.bridge import EuslispResult
+from euslime.bridge import format_stack
 from euslime.handler import DebuggerHandler
 from euslime.logger import get_logger
 
@@ -32,7 +34,6 @@ class Protocol(object):
     def make_error(self, id, err):
         debug = DebuggerHandler(id, err)
         self.handler.debugger.append(debug)
-
         res = [
             Symbol(':debug'),
             0,  # the thread which threw the condition
@@ -67,6 +68,17 @@ class Protocol(object):
             cmd, form, pkg, thread, comm_id = data
             self.handler.command_id.append(comm_id)
             self.handler.package = pkg
+        elif data[0] == Symbol(":emacs-interrupt"):
+            self.interrupt()
+            stack = self.handler.euslisp.exec_internal('(slime::format-callstack)')
+            # Remove call to  itself
+            stack = stack[1:]
+            # Format stack
+            stack = format_stack(stack)
+            inst = EuslispError("Interrupt from Emacs", stack=stack)
+            for r in self.make_error(self.handler.command_id, inst):
+                yield r
+            return
         else:
             form = data
             comm_id = None

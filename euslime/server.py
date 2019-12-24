@@ -74,7 +74,8 @@ class EuslimeRequestHandler(S.BaseRequestHandler, object):
                 try:
                     time.sleep(0.01)
                 except KeyboardInterrupt:
-                    log.warn("Nothing to interrupt!")
+                    interrupt_req = '00001f(:emacs-interrupt :repl-thread)'
+                    self.request.send(interrupt_req)
                 continue
             except Exception:
                 log.error(traceback.format_exc())

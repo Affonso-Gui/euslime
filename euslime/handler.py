@@ -112,9 +112,6 @@ class EuslimeHandler(object):
         self.euslisp.input(msg)
         yield [Symbol(":read-string"), 0, 1]
 
-    def _emacs_interrupt(self, process):
-        raise KeyboardInterrupt
-
     def swank_connection_info(self):
         version = self.euslisp.exec_internal('(slime::implementation-version)')
         name = self.euslisp.exec_internal(

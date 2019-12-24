@@ -39,6 +39,10 @@ def gen_to_string(gen):
     return ''.join(list(gen))
 
 
+def format_stack(stack):
+    return [[i, x, [Symbol(":restartable"), False]] for i,x in enumerate(stack)]
+
+
 class Process(object):
     def __init__(self, cmd,
                  on_output=None,
@@ -226,7 +230,7 @@ class EuslispProcess(Process):
                 return
             msg, stack = loads(data)
             msg = no_color(msg).strip()  # No colors allowed in the sldb buffer
-            stack = [[i, x, [Symbol(":restartable"), False]] for i,x in enumerate(stack)]
+            stack = format_stack(stack)  # Add numbers and :restartable info
             raise EuslispError(msg, stack)
         if command == 'abort':
             return

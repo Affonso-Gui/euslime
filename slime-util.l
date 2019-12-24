@@ -34,6 +34,10 @@
 	((null (cdr args)) (car args))
 	(t `(aif ,(car args) (aand ,@(cdr args))))))
 
+;; Callstack
+(defun format-callstack (&optional (stack (sys:list-callstack)))
+  (mapcar #'prin1-to-string stack))
+
 ;; Symbol related
 (defun split-package (name)
   ;; TODO: read |escaped\|forms|
