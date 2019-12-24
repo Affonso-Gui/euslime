@@ -2,7 +2,6 @@ from sexpdata import dumps, loads, Symbol
 import signal
 import traceback
 
-from euslime.bridge import EuslispError
 from euslime.bridge import EuslispResult
 from euslime.handler import DebuggerHandler
 from euslime.handler import InterruptionHandler
@@ -67,10 +66,10 @@ class Protocol(object):
     def interrupt(self):
         yield self.dumps([Symbol(":read-aborted"), 0, 1])
         self.handler.euslisp.process.send_signal(signal.SIGINT)
-        # self.handler.euslisp.reset()
-        yield self.dumps([Symbol(':return'),
-                          {'abort': "'Keyboard Interrupt'"},
-                          self.handler.command_id.pop()])
+        #  # Used to promptly return from an interrupt, without pop-outs
+        # yield self.dumps([Symbol(':return'),
+        #                   {'abort': "'Keyboard Interrupt'"},
+        #                   self.handler.command_id.pop()])
 
     def process(self, data):
         data = loads(data)
@@ -78,13 +77,6 @@ class Protocol(object):
             cmd, form, pkg, thread, comm_id = data
             self.handler.command_id.append(comm_id)
             self.handler.package = pkg
-        elif data[0] == Symbol(":emacs-interrupt"):
-            self.interrupt()
-            stack = self.handler.get_stack()
-            inst = EuslispError("Interrupt from Emacs", stack=stack)
-            for r in self.make_interrupt(self.handler.command_id, inst):
-                yield r
-            return
         else:
             form = data
             comm_id = None

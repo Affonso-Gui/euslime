@@ -8,6 +8,7 @@ import time
 import traceback
 from threading import Event, Thread
 
+from euslime.bridge import EuslispError
 from euslime.handler import EuslimeHandler
 from euslime.logger import get_logger
 from euslime.protocol import Protocol
@@ -44,6 +45,10 @@ class EuslimeRequestHandler(S.BaseRequestHandler, object):
             self.interrupt_request.set()
             for msg in self.swank.interrupt():
                 self.request.send(msg)
+            stack = self.swank.handler.get_stack()
+            inst = EuslispError("Interrupt from Emacs", stack=stack)
+            for msg in self.swank.make_error(self.swank.handler.command_id, inst):
+                self.request.send(msg)
 
     def handle(self):
         """This method handles packets from swank client.
@@ -74,8 +79,9 @@ class EuslimeRequestHandler(S.BaseRequestHandler, object):
                 try:
                     time.sleep(0.01)
                 except KeyboardInterrupt:
-                    interrupt_req = '00001f(:emacs-interrupt :repl-thread)'
-                    self.request.send(interrupt_req)
+                    log.warn("Nothing to interrupt!")
+                    # interrupt_req = '00001f(:emacs-interrupt :repl-thread)'
+                    # self.request.send(interrupt_req)
                 continue
             except Exception:
                 log.error(traceback.format_exc())

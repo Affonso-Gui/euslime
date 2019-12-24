@@ -123,6 +123,9 @@ class EuslimeHandler(object):
         self.euslisp.input(msg)
         yield [Symbol(":read-string"), 0, 1]
 
+    def _emacs_interrupt(self, process):
+        raise KeyboardInterrupt
+
     def swank_connection_info(self):
         version = self.euslisp.exec_internal('(slime::implementation-version)')
         name = self.euslisp.exec_internal(
@@ -322,15 +325,16 @@ class EuslimeHandler(object):
         #  > raise and keep track of sldb levels
         #  > write-string (without :repl-result) after quitting debugger
 
-        # Return value
         # temporary
         num += 3 if num==0 else 4
-        for r in self.euslisp.eval('(lisp:unwind {})'.format(num)):
-            yield r
 
+        # Return value
         yield [Symbol(':debug-return'), 0, level, Symbol('nil')]
         # yield [Symbol(':return'), {'ok': Symbol('nil')}, self.command_id]
+        for r in self.euslisp.eval('(lisp:unwind {})'.format(num)):
+            yield r
         yield [Symbol(':return'), {'ok': Symbol('nil')}, deb.id]
+
 
     def swank_invoke_nth_restart_for_emacs(self, level, num):
         deb = self.debugger.pop(level - 1)
