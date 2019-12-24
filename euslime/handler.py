@@ -113,9 +113,10 @@ class EuslimeHandler(object):
             return [dumps(result), True]
         return None
 
-    def get_stack(self):
+    def get_stack(self, offset=0):
         stack = self.euslisp.exec_internal('(slime::format-callstack)')
-        stack = stack[1:]  # Remove call to itself
+        offset += 1  # Remove call to itself
+        stack = stack[offset:]
         stack = format_stack(stack)  # Format stack
         return stack
 
