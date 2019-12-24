@@ -9,6 +9,7 @@ from threading import Event
 from euslime.bridge import EuslispError
 from euslime.bridge import EuslispProcess
 from euslime.bridge import EuslispResult
+from euslime.bridge import format_stack
 from euslime.logger import get_logger
 
 log = get_logger(__name__)
@@ -73,6 +74,10 @@ class DebuggerHandler(object):
             self.stack = []
 
 
+class InterruptionHandler(DebuggerHandler):
+    pass
+
+
 class EuslimeHandler(object):
     def __init__(self, *args, **kwargs):
         self.euslisp = EuslispProcess(*args, **kwargs)
@@ -107,6 +112,12 @@ class EuslimeHandler(object):
         elif result:
             return [dumps(result), True]
         return None
+
+    def get_stack(self):
+        stack = self.euslisp.exec_internal('(slime::format-callstack)')
+        stack = stack[1:]  # Remove call to itself
+        stack = format_stack(stack)  # Format stack
+        return stack
 
     def _emacs_return_string(self, process, count, msg):
         self.euslisp.input(msg)
@@ -345,7 +356,8 @@ class EuslimeHandler(object):
         yield [Symbol(':return'), {'abort': 'NIL'}, self.command_id.pop()]
         for val in self.maybe_new_prompt():
             yield val
-        yield [Symbol(':return'), {'abort': msg}, deb.id]
+        if not isinstance(deb, InterruptionHandler):
+            yield [Symbol(':return'), {'abort': msg}, deb.id]
 
     def swank_swank_require(self, *sexp):
         return

@@ -4,8 +4,8 @@ import traceback
 
 from euslime.bridge import EuslispError
 from euslime.bridge import EuslispResult
-from euslime.bridge import format_stack
 from euslime.handler import DebuggerHandler
+from euslime.handler import InterruptionHandler
 from euslime.logger import get_logger
 
 log = get_logger(__name__)
@@ -31,19 +31,29 @@ class Protocol(object):
                     else x for x in sexp]
             return with_header(sexp)
 
-    def make_error(self, id, err):
-        debug = DebuggerHandler(id, err)
-        self.handler.debugger.append(debug)
+    def make_debug_frame(self, debugger):
         res = [
             Symbol(':debug'),
             0,  # the thread which threw the condition
             len(self.handler.debugger),  # the depth of the condition
-            [debug.message, str(), None],  # s-exp with a description
-            debug.restarts,  # list of available restarts
-            debug.stack[:10],  # stacktrace
+            [debugger.message, str(), None],  # s-exp with a description
+            debugger.restarts,  # list of available restarts
+            debugger.stack[:10],  # stacktrace
             [None],  # pending continuation
         ]
-        yield self.dumps(res)
+        return res
+
+    def make_interrupt(self, id, err):
+        debugger = InterruptionHandler(id, err)
+        self.handler.debugger.append(debugger)
+        frame = self.make_debug_frame(debugger)
+        yield self.dumps(frame)
+
+    def make_error(self, id, err):
+        debugger = DebuggerHandler(id, err)
+        self.handler.debugger.append(debugger)
+        frame = self.make_debug_frame(debugger)
+        yield self.dumps(frame)
 
     def make_response(self, id, sexp):
         try:
@@ -70,13 +80,9 @@ class Protocol(object):
             self.handler.package = pkg
         elif data[0] == Symbol(":emacs-interrupt"):
             self.interrupt()
-            stack = self.handler.euslisp.exec_internal('(slime::format-callstack)')
-            # Remove call to  itself
-            stack = stack[1:]
-            # Format stack
-            stack = format_stack(stack)
+            stack = self.handler.get_stack()
             inst = EuslispError("Interrupt from Emacs", stack=stack)
-            for r in self.make_error(self.handler.command_id, inst):
+            for r in self.make_interrupt(self.handler.command_id, inst):
                 yield r
             return
         else:
