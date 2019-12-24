@@ -288,7 +288,9 @@ class EuslimeHandler(object):
         #  > write-string (without :repl-result) after quitting debugger
 
         # Return value
-        num += 5  # temporary
+        # temporary
+        num += 3 if num==0 else 4
+
         for r in self.euslisp.eval('(lisp:unwind {} {})'.format(num, value)):
             yield r
 
@@ -313,7 +315,8 @@ class EuslimeHandler(object):
         #  > write-string (without :repl-result) after quitting debugger
 
         # Return value
-        num += 5  # temporary
+        # temporary
+        num += 3 if num==0 else 4
         for r in self.euslisp.eval('(lisp:unwind {})'.format(num)):
             yield r
 
