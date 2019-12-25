@@ -301,7 +301,7 @@ class EuslimeHandler(object):
 
         # Return value
         # temporary
-        num += 3 if num==0 else 4
+        num += 4 if num==0 else 5
 
         yield [Symbol(':return'), {'ok': Symbol('nil')}, self.command_id.pop()]
         yield [Symbol(':debug-return'), 0, level, Symbol('nil')]
@@ -320,7 +320,7 @@ class EuslimeHandler(object):
         #  > write-string (without :repl-result) after quitting debugger
 
         # temporary
-        num += 3 if num==0 else 4
+        num += 4 if num==0 else 5
 
         # Return value
         yield [Symbol(':return'), {'ok': Symbol('nil')}, self.command_id.pop()]
