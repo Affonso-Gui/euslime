@@ -47,7 +47,7 @@ class EuslimeRequestHandler(S.BaseRequestHandler, object):
                 self.request.send(msg)
             stack = self.swank.handler.get_stack(offset=4)
             inst = EuslispError("Interrupt from Emacs", stack=stack)
-            for msg in self.swank.make_error(self.swank.handler.command_id, inst):
+            for msg in self.swank.make_error(self.swank.handler.command_id[-1], inst):
                 self.request.send(msg)
 
     def handle(self):

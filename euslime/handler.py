@@ -307,7 +307,7 @@ class EuslimeHandler(object):
             yield r
 
         yield [Symbol(':debug-return'), 0, level, Symbol('nil')]
-        # yield [Symbol(':return'), {'ok': Symbol('nil')}, self.command_id]
+        # yield [Symbol(':return'), {'ok': Symbol('nil')}, self.command_id.pop()]
         yield [Symbol(':return'), {'ok': Symbol('nil')}, deb.id]
 
         # # Return from debugger
@@ -330,11 +330,10 @@ class EuslimeHandler(object):
         num += 3 if num==0 else 4
 
         # Return value
+        yield [Symbol(':return'), {'ok': Symbol('nil')}, self.command_id.pop()]
         yield [Symbol(':debug-return'), 0, level, Symbol('nil')]
-        # yield [Symbol(':return'), {'ok': Symbol('nil')}, self.command_id]
         for r in self.euslisp.eval('(lisp:unwind {})'.format(num)):
             yield r
-        yield [Symbol(':return'), {'ok': Symbol('nil')}, deb.id]
 
 
     def swank_invoke_nth_restart_for_emacs(self, level, num):
