@@ -61,7 +61,7 @@
   (send err :set-val 'message nil)
   (send err :set-val 'callstack nil)
   ;; skip itself and call default euserror handling
-  (invoke-next-handler err 1))
+  (invoke-next-handler err))
 
 (defun slime-finish-output (strm)
   (when (derivedp *slime-stream* socket-stream)
