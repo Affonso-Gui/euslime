@@ -50,8 +50,8 @@ def dumps_lisp(s):
 class DebuggerHandler(object):
     restarts = [
         ["QUIT", "Quit to the SLIME top level"],
-        ["CONTINUE", "Ignore the error and continue in the same stack level"],
-        ["RESTART", "Restart euslisp process"]
+        ["CONTINUE", "Continue evaluation in a new REPL stack"],
+        ["RESTART", "Restart the euslisp process"]
     ]
 
     def __init__(self, id, error):
